@@ -59,25 +59,6 @@ void uevt_log(char* str) {
 	LOG_RAW("%s\n", str);
 }
 
-const char printHex[] = "0123456789ABCDEF";
-void hid_receive(uint8_t const* buffer, uint16_t bufsize) {
-	char str[16 * 2 + 1];
-	str[32] = 0;
-	for(uint16_t i = 0; i < 16; i++) {
-		str[i * 2] = printHex[buffer[i] >> 4];
-		str[i * 2 + 1] = printHex[buffer[i] & 0xF];
-	}
-	// print first 32 bytes
-	LOG_RAW("HID[%d]:%s\n", bufsize, str);
-
-	uint8_t echo[64];
-	// echo back with every byte + 1
-	for (uint16_t i = 0; i < bufsize; i++) {
-		echo[i] = buffer[i] + 1;
-	}
-	hid_send(echo, bufsize);
-}
-
 static char serial_fifo[16];
 static uint8_t serial_wp = 0;
 uint8_t serial_got(const char* str) {
