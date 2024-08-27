@@ -14,6 +14,8 @@
 #include "pico/float.h"
 #include "pico/bootrom.h"
 
+#define UART_BAUDRATE 921600
+
 critical_section_t scheduler_lock;
 static __inline void CRITICAL_REGION_INIT(void) {
 	critical_section_init(&scheduler_lock);
@@ -59,6 +61,8 @@ void uevt_log(char* str) {
 	LOG_RAW("%s\n", str);
 }
 
+int actual_baudrate = 0;
+
 static char serial_fifo[16];
 static uint8_t serial_wp = 0;
 uint8_t serial_got(const char* str) {
@@ -77,16 +81,37 @@ void serial_receive(uint8_t const* buffer, uint16_t bufsize) {
 				ws2812_setpixel(U32RGB(20, 0, 20));
 				reset_usb_boot(0, 0);
 			}
+			if(serial_got("BAUDRATE")) {
+				LOG_RAW("baudrate: %d\n", actual_baudrate);
+			}
 		} else {
 			serial_fifo[serial_wp++ & 0xF] = *buffer++;
 		}
 	}
 }
 
+#include "hardware/uart.h"
+static void uarts_init(void) {
+	uart_init(uart0, 9600);
+	gpio_set_function(1, UART_FUNCSEL_NUM(uart0, 1));
+	actual_baudrate = uart_set_baudrate(uart0, UART_BAUDRATE);
+	uart_set_hw_flow(uart0, false, false);
+	uart_set_format(uart0, 8, 1, UART_PARITY_NONE);
+	uart_set_fifo_enabled(uart0, true);
+
+	uart_init(uart1, 9600);
+	gpio_set_function(5, UART_FUNCSEL_NUM(uart1, 5));
+	uart_set_hw_flow(uart1, false, false);
+	uart_set_format(uart1, 8, 1, UART_PARITY_NONE);
+	uart_set_fifo_enabled(uart1, true);
+}
+
 #include "hardware/xosc.h"
 extern void cdc_task(void);
 int main() {
 	xosc_init();
+
+	uarts_init();
 
 	CRITICAL_REGION_INIT();
 	app_sched_init();

@@ -25,6 +25,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 	hardware_irq
 	hardware_xosc
 	hardware_flash
+	hardware_uart
 	tinyusb_device
 	scheduler
 )
