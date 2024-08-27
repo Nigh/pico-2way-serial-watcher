@@ -12,7 +12,7 @@ build:
 	ninja -C $(BUILD_DIR)
 
 clean:
-	@if [ -d "./$(BUILD_DIR)" ]; then rm ./$(BUILD_DIR) -r; fi
+	@if [ -d "./$(BUILD_DIR)" ]; then rm ./$(BUILD_DIR) -rf; fi
 
 rebuild: clean build
 
